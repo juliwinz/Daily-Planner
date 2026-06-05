@@ -7,158 +7,202 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Engineered">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#0a0a0a">
+  <meta name="theme-color" content="#0a0000">
   <title>Engineered Daily Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html { height: 100%; }
-    body { height: 100%; background: #0a0a0a; color: #f0ede6; font-family: 'DM Mono', 'Courier New', monospace; overscroll-behavior: none; }
+    html { height: 100%; touch-action: manipulation; }
+    body {
+      height: 100%; background: #0a0000; color: #e8e0d8;
+      font-family: 'DM Mono', 'Courier New', monospace;
+      overscroll-behavior: none; -webkit-text-size-adjust: none; text-size-adjust: none;
+      -webkit-user-select: none; user-select: none;
+    }
+    input, textarea { -webkit-user-select: text; user-select: text; }
     #app { min-height: 100vh; min-height: -webkit-fill-available; display: flex; flex-direction: column; }
 
-    /* ── HEADER ─────────────────────────────────────────────────────── */
+    /* ── HEADER ── */
     .header {
-      background: #e8ff47; color: #0a0a0a;
-      padding: calc(env(safe-area-inset-top, 0px) + 14px) 20px 12px;
-      display: flex; align-items: baseline; gap: 10px;
+      background: #1a0000;
+      border-bottom: 1px solid #3a0000;
+      padding: calc(env(safe-area-inset-top, 0px) + 12px) 18px 12px;
+      display: flex; align-items: center; gap: 10px;
       position: sticky; top: 0; z-index: 100; flex-shrink: 0;
     }
-    .header-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.03em; }
-    .header-sub   { font-family: 'Syne', sans-serif; font-weight: 400; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .header-lightning {
+      width: 18px; height: 18px; flex-shrink: 0;
+    }
+    .header-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: 0.04em; color: #cc0000; text-transform: uppercase; }
+    .header-sub   { font-family: 'Syne', sans-serif; font-weight: 400; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #4a2020; margin-left: 2px; }
+    .header-line  { flex: 1; height: 1px; background: linear-gradient(to right, #3a0000, transparent); }
 
-    /* ── BODY ───────────────────────────────────────────────────────── */
+    /* ── BODY ── */
     .body {
-      padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+      padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + 24px);
       flex: 1; width: 100%; max-width: 600px; margin: 0 auto;
     }
 
-    /* ── LOADING ────────────────────────────────────────────────────── */
-    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; gap: 16px; }
-    .loading-msg { font-family: 'Syne', sans-serif; font-size: 11px; letter-spacing: 0.12em; color: #444; }
-    .loading-bar { width: 140px; height: 2px; background: #181818; border-radius: 1px; overflow: hidden; }
-    .loading-fill { height: 100%; background: #e8ff47; animation: barAnim 1.6s ease-in-out infinite; border-radius: 1px; }
+    /* ── LOADING ── */
+    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; gap: 20px; }
+    .loading-bolt { animation: boltPulse 1s ease-in-out infinite; }
+    @keyframes boltPulse { 0%,100%{opacity:0.3;transform:scale(0.95)} 50%{opacity:1;transform:scale(1.05)} }
+    .loading-msg { font-family: 'Syne', sans-serif; font-size: 10px; letter-spacing: 0.18em; color: #3a1010; text-transform: uppercase; }
+    .loading-bar { width: 120px; height: 1px; background: #1e0808; overflow: hidden; }
+    .loading-fill { height: 100%; background: #cc0000; animation: barAnim 1.6s ease-in-out infinite; }
     @keyframes barAnim { 0%{width:0%;margin-left:0} 50%{width:70%;margin-left:0} 100%{width:5%;margin-left:95%} }
 
-    /* ── LABELS / LAYOUT HELPERS ────────────────────────────────────── */
-    .label { font-size: 10px; letter-spacing: 0.12em; color: #505050; text-transform: uppercase; margin-bottom: 10px; }
-    .divider { border: none; border-top: 1px solid #161616; margin: 20px 0; }
+    /* ── HELPERS ── */
+    .label { font-size: 9px; letter-spacing: 0.16em; color: #3a1818; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .label::before { content: ''; display: inline-block; width: 14px; height: 1px; background: #cc0000; opacity: 0.5; }
+    .divider { border: none; border-top: 1px solid #180808; margin: 20px 0; }
     .fade-in { animation: fadeIn 0.3s ease forwards; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
-    .error-msg { color: #fb7185; font-size: 11px; margin-top: 8px; line-height: 1.6; }
-    .help-text  { font-size: 12px; color: #555; line-height: 1.7; margin-bottom: 14px; }
-    .link       { color: #e8ff47; font-size: 11px; text-decoration: none; }
-    .reset-btn  { background: none; border: none; color: #333; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; padding: 0; }
-    .reset-btn:hover { color: #666; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+    .error-msg { color: #ff4444; font-size: 11px; margin-top: 8px; line-height: 1.6; }
+    .help-text  { font-size: 12px; color: #4a2828; line-height: 1.7; margin-bottom: 14px; }
+    .link       { color: #cc0000; font-size: 11px; text-decoration: none; }
+    .reset-btn  { background: none; border: none; color: #2e1010; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; padding: 0; }
+    .reset-btn:active { color: #555; }
 
-    /* ── SETUP SCREEN ───────────────────────────────────────────────── */
+    /* ── INPUTS ── */
     .text-input {
-      background: #111; border: 1px solid #252525; color: #f0ede6;
+      background: #110000; border: 1px solid #2a0808; color: #e8e0d8;
       font-family: 'DM Mono', monospace; font-size: 13px;
       outline: none; transition: border-color 0.2s; width: 100%;
-      padding: 14px; border-radius: 2px; -webkit-appearance: none;
+      padding: 14px; border-radius: 1px; -webkit-appearance: none;
     }
-    .text-input:focus { border-color: #e8ff47; }
-    .text-input::placeholder { color: #363636; }
-    .key-preview { font-size: 11px; color: #3a3a3a; margin-top: 6px; letter-spacing: 0.04em; }
+    .text-input:focus { border-color: #cc0000; }
+    .text-input::placeholder { color: #2e1010; }
+    .key-preview { font-size: 11px; color: #2e1010; margin-top: 6px; }
 
-    /* ── AUTH SCREEN ────────────────────────────────────────────────── */
+    /* ── AUTH ── */
     .auth-center { text-align: center; padding-top: 36px; }
     .auth-icon   { font-size: 38px; margin-bottom: 16px; display: block; }
-    .origin-box  { background: #111; border: 1px solid #1e1e1e; padding: 10px 14px; border-radius: 2px; margin-top: 20px; }
-    .origin-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #444; margin-bottom: 4px; }
-    .origin-url   { font-size: 11px; color: #e8ff47; word-break: break-all; }
+    .origin-box  { background: #110000; border: 1px solid #1e0606; padding: 10px 14px; border-radius: 1px; margin-top: 20px; text-align: left; }
+    .origin-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #3a1010; margin-bottom: 4px; }
+    .origin-url   { font-size: 11px; color: #cc0000; word-break: break-all; }
 
-    /* ── CALENDAR STRIP ─────────────────────────────────────────────── */
-    .date-bar    { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #f0ede6; margin-bottom: 18px; }
-    .cal-strip   { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
-    .cal-event   { background: #111; border-left: 2px solid #60a5fa; padding: 8px 12px; }
-    .cal-title   { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 12px; }
-    .cal-meta    { font-size: 10px; color: #505050; margin-top: 2px; }
-    .no-events   { font-size: 11px; color: #3a3a3a; padding: 8px 0; }
+    /* ── CALENDAR STRIP ── */
+    .date-bar  { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; color: #e8e0d8; margin-bottom: 18px; letter-spacing: -0.01em; }
+    .cal-strip { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+    .cal-event { background: #110000; border-left: 2px solid #cc0000; padding: 8px 12px; }
+    .cal-title { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 12px; color: #e8e0d8; }
+    .cal-meta  { font-size: 10px; color: #3a1818; margin-top: 2px; }
+    .no-events { font-size: 11px; color: #2a1010; padding: 8px 0; }
 
-    /* ── INPUT AREA ─────────────────────────────────────────────────── */
-    .input-wrap  { display: flex; gap: 10px; align-items: flex-start; }
+    /* ── TEXTAREA / VOICE ── */
+    .input-wrap { display: flex; gap: 10px; align-items: flex-start; }
     textarea {
-      background: #111; border: 1px solid #252525; color: #f0ede6;
+      background: #110000; border: 1px solid #2a0808; color: #e8e0d8;
       font-family: 'DM Mono', monospace; font-size: 13px; resize: none;
       outline: none; transition: border-color 0.2s; width: 100%;
-      padding: 14px; border-radius: 2px; line-height: 1.6; -webkit-appearance: none;
+      padding: 14px; border-radius: 1px; line-height: 1.6; -webkit-appearance: none;
     }
-    textarea:focus { border-color: #e8ff47; }
-    textarea::placeholder { color: #363636; }
+    textarea:focus { border-color: #cc0000; }
+    textarea::placeholder { color: #2e1010; }
     .voice-btn {
-      width: 50px; height: 50px; border-radius: 50%; border: 2px solid #252525;
-      background: #111; color: #777; cursor: pointer; display: flex;
+      width: 50px; height: 50px; border-radius: 50%; border: 1px solid #2a0808;
+      background: #110000; color: #4a2020; cursor: pointer; display: flex;
       align-items: center; justify-content: center; font-size: 18px;
       transition: all 0.2s; flex-shrink: 0; -webkit-appearance: none;
     }
-    .voice-btn.active { border-color: #fb7185; background: #fb718512; color: #fb7185; animation: vpulse 1s ease-in-out infinite; }
-    @keyframes vpulse { 0%,100%{box-shadow:0 0 0 0 #fb718430} 50%{box-shadow:0 0 0 7px transparent} }
-    .voice-hint { font-size: 10px; color: #fb7185; margin-top: 6px; text-align: center; letter-spacing: 0.04em; }
+    .voice-btn.active { border-color: #cc0000; background: #1a0000; color: #cc0000; animation: vpulse 1s ease-in-out infinite; }
+    @keyframes vpulse { 0%,100%{box-shadow:0 0 0 0 #cc000030} 50%{box-shadow:0 0 0 8px transparent} }
+    .voice-hint { font-size: 10px; color: #cc0000; margin-top: 6px; text-align: center; letter-spacing: 0.06em; }
     .input-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-    .cmd-hint { font-size: 9px; color: #282828; letter-spacing: 0.04em; }
+    .cmd-hint { font-size: 9px; color: #1e0808; letter-spacing: 0.04em; }
 
-    /* ── BUTTONS ────────────────────────────────────────────────────── */
+    /* ── BUTTONS ── */
     .btn-primary {
-      background: #e8ff47; color: #0a0a0a; border: none;
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
-      letter-spacing: 0.05em; text-transform: uppercase;
+      background: #cc0000; color: #fff; border: none;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px;
+      letter-spacing: 0.1em; text-transform: uppercase;
       padding: 15px 24px; cursor: pointer; transition: background 0.15s;
-      border-radius: 2px; -webkit-appearance: none; display: block; width: 100%;
+      border-radius: 1px; -webkit-appearance: none; display: block; width: 100%;
+      position: relative; overflow: hidden;
     }
-    .btn-primary:active { background: #f4ff6e; }
-    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary::before {
+      content: '';
+      position: absolute; top: 0; left: -100%; width: 60px; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      animation: shimmer 2.5s infinite;
+    }
+    @keyframes shimmer { 0%{left:-100%} 100%{left:200%} }
+    .btn-primary:active { background: #aa0000; }
+    .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-secondary {
-      background: transparent; color: #e8ff47; border: 1px solid #e8ff4760;
-      font-family: 'Syne', sans-serif; font-weight: 600; font-size: 11px;
-      letter-spacing: 0.05em; text-transform: uppercase;
-      padding: 10px 16px; cursor: pointer; transition: background 0.15s;
-      border-radius: 2px; -webkit-appearance: none; white-space: nowrap;
+      background: transparent; color: #cc0000; border: 1px solid #3a0000;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 10px 16px; cursor: pointer; transition: all 0.15s;
+      border-radius: 1px; -webkit-appearance: none; white-space: nowrap;
     }
-    .btn-secondary:active { background: #e8ff4710; }
-    .btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-secondary:active { background: #1a0000; }
+    .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    /* ── PLAN ───────────────────────────────────────────────────────── */
-    .motivation-box  { border: 1px solid #e8ff4722; background: #e8ff4706; padding: 14px; border-radius: 2px; margin-bottom: 20px; }
-    .motivation-lbl  { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #e8ff4755; margin-bottom: 6px; }
-    .motivation-text { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; font-style: italic; color: #c0bdb6; line-height: 1.6; }
-    .greeting  { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #e8ff47; margin-bottom: 6px; }
-    .summary   { font-size: 12px; color: #636363; line-height: 1.7; margin-bottom: 18px; }
+    /* ── PLAN ── */
+    .motivation-box  { border: 1px solid #2a0000; background: #0f0000; padding: 14px; border-radius: 1px; margin-bottom: 20px; position: relative; overflow: hidden; }
+    .motivation-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #cc0000, transparent); }
+    .motivation-lbl  { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #4a1010; margin-bottom: 8px; }
+    .motivation-text { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; font-style: italic; color: #9a8080; line-height: 1.6; }
+    .greeting  { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: #cc0000; margin-bottom: 5px; letter-spacing: 0.01em; }
+    .summary   { font-size: 12px; color: #4a2828; line-height: 1.7; margin-bottom: 18px; }
     .legend    { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-    .leg-item  { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #444; display: flex; align-items: center; gap: 4px; }
-    .dot       { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .block-card { border-left: 3px solid; padding: 11px 14px; background: #0f0f0f; margin-bottom: 5px; position: relative; }
-    .block-card.fixed::after { content: '📅'; position: absolute; top: 9px; right: 9px; font-size: 10px; opacity: 0.45; }
+    .leg-item  { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #3a1818; display: flex; align-items: center; gap: 4px; }
+    .dot       { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+    .block-card {
+      border-left: 2px solid; padding: 11px 14px; background: #0f0000;
+      margin-bottom: 4px; position: relative;
+      transition: background 0.1s;
+    }
+    .block-card:active { background: #130000; }
+    .block-card.fixed::after { content: '📅'; position: absolute; top: 9px; right: 9px; font-size: 10px; opacity: 0.35; }
     .block-row  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .block-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
     .block-time { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; }
-    .block-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; color: #f0ede6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .block-dur  { font-size: 10px; color: #333; white-space: nowrap; margin-left: 6px; flex-shrink: 0; }
-    .block-detail { font-size: 11px; color: #606060; line-height: 1.65; }
-    .tip-box  { border: 1px solid #e8ff4720; background: #e8ff4705; padding: 12px 14px; border-radius: 2px; margin: 14px 0; }
-    .tip-lbl  { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #e8ff4755; margin-bottom: 4px; }
-    .tip-text { font-size: 11px; color: #868686; line-height: 1.7; }
+    .block-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; color: #e8e0d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .block-dur  { font-size: 10px; color: #2e1010; white-space: nowrap; margin-left: 6px; flex-shrink: 0; }
+    .block-detail { font-size: 11px; color: #4a2828; line-height: 1.65; }
+
+    .tip-box  { border: 1px solid #2a0000; background: #0f0000; padding: 12px 14px; border-radius: 1px; margin: 14px 0; position: relative; }
+    .tip-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #cc000060, transparent); }
+    .tip-lbl  { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #4a1010; margin-bottom: 4px; }
+    .tip-text { font-size: 11px; color: #6a4040; line-height: 1.7; }
+
     .followup-row { display: flex; gap: 8px; }
     .followup-inp {
-      background: #0f0f0f; border: 1px solid #202020; color: #f0ede6;
+      background: #0f0000; border: 1px solid #1e0606; color: #e8e0d8;
       font-family: 'DM Mono', monospace; font-size: 12px;
       outline: none; transition: border-color 0.2s; padding: 10px 12px;
-      border-radius: 2px; flex: 1; -webkit-appearance: none;
+      border-radius: 1px; flex: 1; -webkit-appearance: none;
     }
-    .followup-inp:focus { border-color: #e8ff47; }
-    .followup-inp::placeholder { color: #2e2e2e; }
+    .followup-inp:focus { border-color: #cc0000; }
+    .followup-inp::placeholder { color: #2e1010; }
     .plan-footer { margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .fixed-note { font-size: 10px; color: #242424; }
+    .fixed-note { font-size: 10px; color: #1e0808; }
+
+    /* ── DECORATIVE LIGHTNING SVG ── */
+    .bg-bolt {
+      position: fixed; bottom: -20px; right: -20px; opacity: 0.03;
+      pointer-events: none; z-index: 0; width: 200px;
+    }
+    .body { position: relative; z-index: 1; }
   </style>
 </head>
 <body>
 <div id="app">
-  <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a">
-    <div style="font-family:'Courier New',monospace;font-size:11px;color:#333;letter-spacing:0.1em">LADEN...</div>
+  <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0000">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#2e1010;letter-spacing:0.15em">LOADING...</div>
   </div>
 </div>
+
+<!-- decorative background bolt -->
+<svg class="bg-bolt" viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="60,0 20,110 55,110 40,200 80,80 47,80" fill="#cc0000"/>
+</svg>
 
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script>
@@ -172,14 +216,16 @@ const SCOPES    = 'https://www.googleapis.com/auth/calendar.readonly';
 const EXCLUDE   = ['feiertag', 'holiday', 'geburtstag', 'birthday', 'stuvus'];
 
 const CATS = {
-  training:  { color: '#e8ff47', label: 'Training' },
-  uni:       { color: '#60a5fa', label: 'Uni' },
-  work:      { color: '#f97316', label: 'Arbeit' },
-  content:   { color: '#c084fc', label: 'Content' },
-  nutrition: { color: '#34d399', label: 'Ernährung' },
-  recovery:  { color: '#fb7185', label: 'Erholung' },
-  personal:  { color: '#94a3b8', label: 'Persönlich' },
+  training:  { color: '#cc0000', label: 'Training' },
+  uni:       { color: '#e05a00', label: 'University' },
+  work:      { color: '#c04400', label: 'Work' },
+  content:   { color: '#a03060', label: 'Content' },
+  nutrition: { color: '#805030', label: 'Nutrition' },
+  recovery:  { color: '#604040', label: 'Recovery' },
+  personal:  { color: '#503030', label: 'Personal' },
 };
+
+const LIGHTNING_SVG = `<svg class="header-lightning" viewBox="0 0 18 28" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="11,0 3,16 9,16 7,28 15,12 9,12" fill="#cc0000"/></svg>`;
 
 const SYSTEM_PROMPT = `You are Julien's personal AI day planner. You know everything about him:
 
@@ -199,8 +245,7 @@ SOCIAL MEDIA:
 PLANNING CATEGORIES: training | uni | work | content | nutrition | recovery | personal
 
 ─────────────────────────────────────────────────────────────────────
-WICHTIG: Alle Texte im JSON auf DEUTSCH ausgeben (greeting, motivation, summary, detail, tip).
-OUTPUT: Return ONLY a valid JSON object. No markdown. No code fences. No explanation. Nothing else.
+OUTPUT all text in ENGLISH. Return ONLY a valid JSON object. No markdown. No code fences. No explanation. Nothing else.
 
 {
   "greeting": "1 punchy sentence – casual, sharp, no fluff",
@@ -212,7 +257,7 @@ OUTPUT: Return ONLY a valid JSON object. No markdown. No code fences. No explana
       "duration": "Xmin or Xh",
       "category": "training|uni|work|content|nutrition|recovery|personal",
       "title": "Short block title",
-      "detail": "1-2 sentences. For training: specify exact exercises, sets, reps/duration (e.g. 'Tuck planche holds 4×10s, false grip dead hangs 4×30s, wall HS kick-ups 5×30s').",
+      "detail": "1-2 sentences. For training: specify exact exercises, sets, reps/duration (e.g. 'Tuck planche holds 4x10s, false grip dead hangs 4x30s, wall HS kick-ups 5x30s').",
       "fixed": true or false
     }
   ],
@@ -234,9 +279,9 @@ RULES:
 ═══════════════════════════════════════════════════════════════════ */
 let phase       = 'init';
 let tokenClient = null;
-let accessToken = store('gca_token')  || '';
+let accessToken = store('gca_token')   || '';
 let tokenExpiry = +store('gca_expiry') || 0;
-let anthropicKey= store('gemini_key')    || '';
+let geminiKey   = store('gemini_key')  || '';
 let calEvents   = [];
 let plan        = null;
 let history     = [];
@@ -249,7 +294,7 @@ let voiceOK     = !!(window.SpeechRecognition || window.webkitSpeechRecognition)
 let appError    = '';
 
 /* ═══════════════════════════════════════════════════════════════════
-   STORAGE HELPER
+   STORAGE
 ═══════════════════════════════════════════════════════════════════ */
 function store(key, val) {
   try {
@@ -275,7 +320,7 @@ function initTokenClient() {
 }
 
 function connectGoogle() {
-  if (!tokenClient) { appError = 'Google Auth nicht geladen – bitte neu laden.'; render(); return; }
+  if (!tokenClient) { appError = 'Google Auth not loaded – please refresh.'; render(); return; }
   tokenClient.requestAccessToken({ prompt: '' });
 }
 
@@ -289,8 +334,8 @@ function onToken(resp) {
   goLoading();
 }
 
-function onAuthError(err) {
-  appError = 'Google-Authentifizierung fehlgeschlagen. Stelle sicher, dass deine URL in Google Cloud Console → OAuth → Autorisierte JS-Quellen eingetragen ist.';
+function onAuthError() {
+  appError = 'Google auth failed. Make sure your site URL is added to Google Cloud Console → OAuth → Authorized JS Origins.';
   render();
 }
 
@@ -343,7 +388,7 @@ async function fetchCalendar() {
     calEvents = all;
     setPhase('input');
   } catch(e) {
-    appError = 'Kalender konnte nicht geladen werden. Verbindung prüfen.';
+    appError = 'Could not load calendar. Check your connection.';
     setPhase('auth');
   }
 }
@@ -360,7 +405,7 @@ function eventsContext() {
   if (!calEvents.length) return 'No calendar events today – open day.';
   return calEvents.map(e => {
     const s = fmtTime(e.start), en = fmtTime(e.end);
-    return `- ${e.title} [${e.cal}]: ${s ? `${s}–${en}` : 'All day'}`;
+    return `- ${e.title} [${e.cal}]: ${s ? `${s}-${en}` : 'All day'}`;
   }).join('\n');
 }
 
@@ -372,9 +417,8 @@ async function callGemini(messages, system) {
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
   }));
-
   const r = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${anthropicKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -386,7 +430,7 @@ async function callGemini(messages, system) {
     }
   );
   const d = await r.json();
-  if (d.error) throw new Error(d.error.message || 'API-Fehler');
+  if (d.error) throw new Error(d.error.message || 'API error');
   return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
@@ -394,13 +438,13 @@ async function generatePlan() {
   if (!userInput.trim()) return;
   setPhase('planning');
   try {
-    const prompt = `TODAY'S CALENDAR EVENTS (fixed – do not move):\n${eventsContext()}\n\nJULIEN'S INPUT:\n${userInput}`;
+    const prompt = `TODAY'S CALENDAR EVENTS (fixed - do not move):\n${eventsContext()}\n\nJULIEN'S INPUT:\n${userInput}`;
     const text = await callGemini([{ role: 'user', content: prompt }], SYSTEM_PROMPT);
     plan = JSON.parse(text.replace(/```json|```/g, '').trim());
     history = [{ role: 'user', content: prompt }, { role: 'assistant', content: text }];
     setPhase('plan');
   } catch(e) {
-    appError = `Plan konnte nicht erstellt werden: ${e.message}`;
+    appError = `Couldn't generate plan: ${e.message}`;
     setPhase('input');
   }
 }
@@ -409,14 +453,14 @@ async function doFollowUp() {
   if (!followUp.trim() || followLoading) return;
   followLoading = true; appError = ''; render();
   try {
-    const sys = `You are Julien's AI day planner. A plan exists. Apply requested changes or answer questions. Return ONLY valid JSON in the exact same format.\nCurrent plan: ${JSON.stringify(plan)}`;
+    const sys = `You are Julien's AI day planner. A plan exists. Apply changes or answer questions. Return ONLY valid JSON in the exact same format.\nCurrent plan: ${JSON.stringify(plan)}`;
     const newHist = [...history, { role: 'user', content: followUp }];
     const text = await callGemini(newHist, sys);
     plan = JSON.parse(text.replace(/```json|```/g, '').trim());
     history = [...newHist, { role: 'assistant', content: text }];
     followUp = '';
   } catch(e) {
-    appError = 'Aktualisierung fehlgeschlagen. Nochmal versuchen.';
+    appError = 'Update failed. Try again.';
   }
   followLoading = false; render();
 }
@@ -428,7 +472,7 @@ function startVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return;
   const r = new SR();
-  r.lang = 'de-DE'; r.continuous = true; r.interimResults = true;
+  r.lang = 'en-US'; r.continuous = true; r.interimResults = true;
   let final = userInput ? userInput.trimEnd() + ' ' : '';
   r.onresult = e => {
     let interim = '';
@@ -446,10 +490,7 @@ function startVoice() {
   recognition = r; isListening = true; render();
 }
 
-function stopVoice() {
-  recognition?.stop();
-  isListening = false; render();
-}
+function stopVoice() { recognition?.stop(); isListening = false; render(); }
 
 /* ═══════════════════════════════════════════════════════════════════
    PHASE CONTROL
@@ -461,42 +502,45 @@ function goLoading()  { setPhase('loading'); fetchCalendar(); }
    RENDER
 ═══════════════════════════════════════════════════════════════════ */
 function render() {
-  const header = `<div class="header"><span class="header-title">ENGINEERED</span><span class="header-sub">Daily Planner</span></div>`;
+  const header = `<div class="header">${LIGHTNING_SVG}<span class="header-title">Engineered</span><span class="header-sub">Daily Planner</span><div class="header-line"></div></div>`;
   let body = '';
-
   switch(phase) {
     case 'init':
-    case 'loading':  body = tplLoading('KALENDER WIRD GELADEN...'); break;
-    case 'planning': body = tplLoading('DEIN TAG WIRD GEPLANT...'); break;
+    case 'loading':  body = tplLoading('LOADING CALENDAR...'); break;
+    case 'planning': body = tplLoading('BUILDING YOUR DAY...'); break;
     case 'setup':    body = tplSetup(); break;
     case 'auth':     body = tplAuth(); break;
     case 'input':    body = tplInput(); break;
     case 'plan':     body = tplPlan(); break;
   }
-
-  document.getElementById('app').innerHTML =
-    `${header}<div class="body">${body}</div>`;
+  document.getElementById('app').innerHTML = `${header}<div class="body">${body}</div>`;
   bind();
 }
 
-/* ─────── TEMPLATES ─────── */
+/* ─── TEMPLATES ─── */
 function tplLoading(msg) {
-  return `<div class="loading-screen"><div class="loading-msg">${msg}</div><div class="loading-bar"><div class="loading-fill"></div></div></div>`;
+  return `<div class="loading-screen">
+    <svg class="loading-bolt" width="40" height="64" viewBox="0 0 40 64" fill="none">
+      <polygon points="26,0 8,38 20,38 14,64 32,26 20,26" fill="#cc0000"/>
+    </svg>
+    <div class="loading-msg">${msg}</div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+  </div>`;
 }
 
 function tplSetup() {
-  const preview = anthropicKey ? `AIza...${anthropicKey.slice(-6)}` : '';
+  const preview = geminiKey ? `...${geminiKey.slice(-8)}` : '';
   return `<div class="fade-in">
-    <div class="label">→ Einmalige Einrichtung</div>
-    <p class="help-text">Gib deinen Gemini API Key ein, um den KI-Planner zu aktivieren. Er wird nur lokal auf deinem Gerät gespeichert – nichts wird hochgeladen.</p>
-    <input id="api-inp" type="password" class="text-input" placeholder="AIzaSy..." value="${esc(anthropicKey)}">
-    ${preview ? `<div class="key-preview">Gespeicherter Key: ${preview}</div>` : ''}
+    <div class="label">One-time setup</div>
+    <p class="help-text">Enter your Gemini API key to power the AI planner. Stored locally on your device only.</p>
+    <input id="api-inp" type="password" class="text-input" placeholder="Paste your Gemini API key..." value="${esc(geminiKey)}">
+    ${preview ? `<div class="key-preview">Saved: ...${preview}</div>` : ''}
     ${appError ? `<div class="error-msg">${esc(appError)}</div>` : ''}
     <div style="margin-top:12px;margin-bottom:20px">
-      <a href="https://aistudio.google.com/apikey" target="_blank" class="link">→ API Key kostenlos holen (Google AI Studio)</a>
+      <a href="https://aistudio.google.com/apikey" target="_blank" class="link">→ Get free API key at Google AI Studio</a>
     </div>
-    <button id="save-key" class="btn-primary">Speichern & Weiter →</button>
-    ${anthropicKey ? `<div style="text-align:center;margin-top:14px"><button id="skip-setup" class="reset-btn">Gespeicherten Key verwenden</button></div>` : ''}
+    <button id="save-key" class="btn-primary">Save & Continue →</button>
+    ${geminiKey ? `<div style="text-align:center;margin-top:14px"><button id="skip-setup" class="reset-btn">Use saved key</button></div>` : ''}
   </div>`;
 }
 
@@ -504,46 +548,46 @@ function tplAuth() {
   const origin = window.location.origin;
   return `<div class="fade-in auth-center">
     <span class="auth-icon">📅</span>
-    <div class="label" style="justify-content:center;display:flex">Google Kalender verbinden</div>
-    <p class="help-text" style="text-align:center;max-width:320px;margin:0 auto 24px">So kann ich deine Vorlesungen und Termine automatisch in den Tagesplan einbauen.</p>
+    <div class="label" style="justify-content:center">Connect Google Calendar</div>
+    <p class="help-text" style="text-align:center;max-width:300px;margin:0 auto 24px">So your lectures and work shifts land automatically in your daily plan.</p>
     ${appError ? `<div class="error-msg" style="text-align:left;margin-bottom:16px">${esc(appError)}</div>` : ''}
-    <button id="connect-google" class="btn-primary">Google Kalender verbinden →</button>
-    <div class="origin-box" style="text-align:left;margin-top:20px">
-      <div class="origin-label">⚠ Diese URL in Google Cloud Console → OAuth → Autorisierte JS-Quellen eintragen:</div>
+    <button id="connect-google" class="btn-primary">Connect Google Calendar →</button>
+    <div class="origin-box">
+      <div class="origin-label">⚠ Add this URL to Google Cloud Console → OAuth → Authorized JS Origins:</div>
       <div class="origin-url">${esc(origin)}</div>
     </div>
     <div style="margin-top:16px;text-align:center">
-      <button id="back-setup" class="reset-btn">← API Key ändern</button>
+      <button id="back-setup" class="reset-btn">← Change API key</button>
     </div>
   </div>`;
 }
 
 function tplInput() {
-  const today = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const evHTML = calEvents.length
     ? calEvents.map(e => {
         const s = fmtTime(e.start), en = fmtTime(e.end);
-        return `<div class="cal-event"><div class="cal-title">${esc(e.title)}</div><div class="cal-meta">${esc(e.cal)}${s ? ` · ${s}–${en}` : ' · Ganztägig'}</div></div>`;
+        return `<div class="cal-event"><div class="cal-title">${esc(e.title)}</div><div class="cal-meta">${esc(e.cal)}${s ? ` · ${s}–${en}` : ' · All day'}</div></div>`;
       }).join('')
-    : `<div class="no-events">Keine Termine gefunden – freier Tag ✓</div>`;
+    : `<div class="no-events">No events – open day ✓</div>`;
 
   return `<div class="fade-in">
     <div class="date-bar">${today}</div>
-    <div class="label">→ Heute aus deinem Kalender</div>
+    <div class="label">Today's calendar</div>
     <div class="cal-strip">${evHTML}</div>
-    <div class="label" style="margin-top:20px">→ Energie &amp; Ziele heute</div>
+    <div class="label" style="margin-top:20px">Energy &amp; goals</div>
     <div class="input-wrap">
-      <textarea id="ta" rows="4" placeholder="z.B. Mittlere Energie. Will heute Calisthenics machen und vielleicht was filmen.">${esc(userInput)}</textarea>
+      <textarea id="ta" rows="4" placeholder="e.g. Medium energy. Want to train calisthenics and maybe film something.">${esc(userInput)}</textarea>
       ${voiceOK ? `<button id="voice-btn" class="voice-btn${isListening ? ' active' : ''}">${isListening ? '⏹' : '🎙'}</button>` : ''}
     </div>
-    ${isListening ? `<div class="voice-hint">● Aufnahme läuft – tippe zum Stoppen</div>` : ''}
+    ${isListening ? `<div class="voice-hint">● Recording – tap to stop</div>` : ''}
     ${appError ? `<div class="error-msg">${esc(appError)}</div>` : ''}
-    <button id="gen-btn" class="btn-primary" style="margin-top:12px">Tag planen →</button>
+    <button id="gen-btn" class="btn-primary" style="margin-top:12px">Plan My Day →</button>
     <div class="input-footer">
-      <span class="cmd-hint">⌘ + Enter zum Generieren</span>
+      <span class="cmd-hint">⌘ + Enter to generate</span>
       <div style="display:flex;gap:16px">
-        <button id="refresh-cal" class="reset-btn">↺ Aktualisieren</button>
-        <button id="disconnect" class="reset-btn">Trennen</button>
+        <button id="refresh-cal" class="reset-btn">↺ Refresh</button>
+        <button id="disconnect" class="reset-btn">Disconnect</button>
       </div>
     </div>
   </div>`;
@@ -570,33 +614,32 @@ function tplPlan() {
 
   return `<div class="fade-in">
     ${plan.motivation ? `<div class="motivation-box">
-      <div class="motivation-lbl">→ Motivation für heute</div>
+      <div class="motivation-lbl">Today's Motivation</div>
       <div class="motivation-text">"${esc(plan.motivation)}"</div>
     </div>` : ''}
     <div class="greeting">${esc(plan.greeting)}</div>
     <div class="summary">${esc(plan.summary)}</div>
     <div class="legend">${legend}</div>
-    <div class="label">→ Zeitblöcke</div>
+    <div class="label">Time Blocks</div>
     ${blocks}
     ${plan.tip ? `<div class="tip-box">
-      <div class="tip-lbl">→ Fokus heute</div>
+      <div class="tip-lbl">Today's Focus</div>
       <div class="tip-text">${esc(plan.tip)}</div>
     </div>` : ''}
     <div class="divider"></div>
-    <div class="label">→ Anpassen oder fragen</div>
+    <div class="label">Adjust or ask</div>
     <div class="followup-row">
-      <input id="fu-inp" class="followup-inp" placeholder="Training auf morgens verschieben / was vor dem Training essen?" value="${esc(followUp)}">
-      <button id="fu-btn" class="btn-secondary" ${followLoading ? 'disabled' : ''}>${followLoading ? '...' : 'Ändern'}</button>
+      <input id="fu-inp" class="followup-inp" placeholder="Move training to morning / pre-workout nutrition?" value="${esc(followUp)}">
+      <button id="fu-btn" class="btn-secondary" ${followLoading ? 'disabled' : ''}>${followLoading ? '...' : 'Update'}</button>
     </div>
     ${appError ? `<div class="error-msg" style="margin-top:8px">${esc(appError)}</div>` : ''}
     <div class="plan-footer">
-      <button id="replan-btn" class="reset-btn">↩ Neu planen</button>
-      <span class="fixed-note">📅 = Kalendereintrag</span>
+      <button id="replan-btn" class="reset-btn">↩ New day</button>
+      <span class="fixed-note">📅 = calendar event</span>
     </div>
   </div>`;
 }
 
-/* ─────── ESCAPE ─────── */
 function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -606,23 +649,15 @@ function esc(s) {
    EVENT BINDING
 ═══════════════════════════════════════════════════════════════════ */
 function bind() {
-  // Setup
   q('save-key', el => el.onclick = () => {
     const k = document.getElementById('api-inp')?.value?.trim();
-    if (!k || k.length < 10) { appError = 'Key zu kurz – bitte vollständigen API Key eingeben'; render(); return; }
-    anthropicKey = k; store('gemini_key', k); appError = '';
+    if (!k || k.length < 10) { appError = 'Key too short – paste the full API key'; render(); return; }
+    geminiKey = k; store('gemini_key', k); appError = '';
     tokenValid() ? goLoading() : setPhase('auth');
   });
-  q('skip-setup', el => el.onclick = () => {
-    appError = '';
-    tokenValid() ? goLoading() : setPhase('auth');
-  });
-
-  // Auth
+  q('skip-setup', el => el.onclick = () => { appError = ''; tokenValid() ? goLoading() : setPhase('auth'); });
   q('connect-google', el => el.onclick = connectGoogle);
   q('back-setup',     el => el.onclick = () => { appError = ''; setPhase('setup'); });
-
-  // Input
   q('ta', el => {
     el.oninput = e => { userInput = e.target.value; };
     el.onkeydown = e => { if (e.metaKey && e.key === 'Enter') generatePlan(); };
@@ -631,8 +666,6 @@ function bind() {
   q('gen-btn',     el => el.onclick = generatePlan);
   q('refresh-cal', el => el.onclick = () => { appError = ''; setPhase('loading'); fetchCalendar(); });
   q('disconnect',  el => el.onclick = disconnectGoogle);
-
-  // Plan
   q('fu-inp', el => {
     el.oninput = e => { followUp = e.target.value; };
     el.onkeydown = e => { if (e.key === 'Enter') doFollowUp(); };
@@ -653,8 +686,7 @@ window.addEventListener('load', () => {
     if (window.google?.accounts?.oauth2 || tries > 40) {
       clearInterval(wait);
       if (window.google?.accounts?.oauth2) initTokenClient();
-
-      if (!anthropicKey)   setPhase('setup');
+      if (!geminiKey)        setPhase('setup');
       else if (!tokenValid()) setPhase('auth');
       else { setPhase('loading'); fetchCalendar(); }
     }
