@@ -608,7 +608,7 @@ function bind() {
   // Setup
   q('save-key', el => el.onclick = () => {
     const k = document.getElementById('api-inp')?.value?.trim();
-    if (!k || !k.startsWith('AIza')) { appError = 'Ungültiger Key – muss mit AIza beginnen'; render(); return; }
+    if (!k || k.length < 10) { appError = 'Key zu kurz – bitte vollständigen API Key eingeben'; render(); return; }
     anthropicKey = k; store('gemini_key', k); appError = '';
     tokenValid() ? goLoading() : setPhase('auth');
   });
