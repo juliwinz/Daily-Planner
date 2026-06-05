@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Engineered">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Engineered Daily Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { height: 100%; }
+    body { height: 100%; background: #0a0a0a; color: #f0ede6; font-family: 'DM Mono', 'Courier New', monospace; overscroll-behavior: none; }
+    #app { min-height: 100vh; min-height: -webkit-fill-available; display: flex; flex-direction: column; }
+
+    /* ── HEADER ─────────────────────────────────────────────────────── */
+    .header {
+      background: #e8ff47; color: #0a0a0a;
+      padding: calc(env(safe-area-inset-top, 0px) + 14px) 20px 12px;
+      display: flex; align-items: baseline; gap: 10px;
+      position: sticky; top: 0; z-index: 100; flex-shrink: 0;
+    }
+    .header-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.03em; }
+    .header-sub   { font-family: 'Syne', sans-serif; font-weight: 400; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+    /* ── BODY ───────────────────────────────────────────────────────── */
+    .body {
+      padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+      flex: 1; width: 100%; max-width: 600px; margin: 0 auto;
+    }
+
+    /* ── LOADING ────────────────────────────────────────────────────── */
+    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; gap: 16px; }
+    .loading-msg { font-family: 'Syne', sans-serif; font-size: 11px; letter-spacing: 0.12em; color: #444; }
+    .loading-bar { width: 140px; height: 2px; background: #181818; border-radius: 1px; overflow: hidden; }
+    .loading-fill { height: 100%; background: #e8ff47; animation: barAnim 1.6s ease-in-out infinite; border-radius: 1px; }
+    @keyframes barAnim { 0%{width:0%;margin-left:0} 50%{width:70%;margin-left:0} 100%{width:5%;margin-left:95%} }
+
+    /* ── LABELS / LAYOUT HELPERS ────────────────────────────────────── */
+    .label { font-size: 10px; letter-spacing: 0.12em; color: #505050; text-transform: uppercase; margin-bottom: 10px; }
+    .divider { border: none; border-top: 1px solid #161616; margin: 20px 0; }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+    .error-msg { color: #fb7185; font-size: 11px; margin-top: 8px; line-height: 1.6; }
+    .help-text  { font-size: 12px; color: #555; line-height: 1.7; margin-bottom: 14px; }
+    .link       { color: #e8ff47; font-size: 11px; text-decoration: none; }
+    .reset-btn  { background: none; border: none; color: #333; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; padding: 0; }
+    .reset-btn:hover { color: #666; }
+
+    /* ── SETUP SCREEN ───────────────────────────────────────────────── */
+    .text-input {
+      background: #111; border: 1px solid #252525; color: #f0ede6;
+      font-family: 'DM Mono', monospace; font-size: 13px;
+      outline: none; transition: border-color 0.2s; width: 100%;
+      padding: 14px; border-radius: 2px; -webkit-appearance: none;
+    }
+    .text-input:focus { border-color: #e8ff47; }
+    .text-input::placeholder { color: #363636; }
+    .key-preview { font-size: 11px; color: #3a3a3a; margin-top: 6px; letter-spacing: 0.04em; }
+
+    /* ── AUTH SCREEN ────────────────────────────────────────────────── */
+    .auth-center { text-align: center; padding-top: 36px; }
+    .auth-icon   { font-size: 38px; margin-bottom: 16px; display: block; }
+    .origin-box  { background: #111; border: 1px solid #1e1e1e; padding: 10px 14px; border-radius: 2px; margin-top: 20px; }
+    .origin-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #444; margin-bottom: 4px; }
+    .origin-url   { font-size: 11px; color: #e8ff47; word-break: break-all; }
+
+    /* ── CALENDAR STRIP ─────────────────────────────────────────────── */
+    .date-bar    { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #f0ede6; margin-bottom: 18px; }
+    .cal-strip   { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
+    .cal-event   { background: #111; border-left: 2px solid #60a5fa; padding: 8px 12px; }
+    .cal-title   { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 12px; }
+    .cal-meta    { font-size: 10px; color: #505050; margin-top: 2px; }
+    .no-events   { font-size: 11px; color: #3a3a3a; padding: 8px 0; }
+
+    /* ── INPUT AREA ─────────────────────────────────────────────────── */
+    .input-wrap  { display: flex; gap: 10px; align-items: flex-start; }
+    textarea {
+      background: #111; border: 1px solid #252525; color: #f0ede6;
+      font-family: 'DM Mono', monospace; font-size: 13px; resize: none;
+      outline: none; transition: border-color 0.2s; width: 100%;
+      padding: 14px; border-radius: 2px; line-height: 1.6; -webkit-appearance: none;
+    }
+    textarea:focus { border-color: #e8ff47; }
+    textarea::placeholder { color: #363636; }
+    .voice-btn {
+      width: 50px; height: 50px; border-radius: 50%; border: 2px solid #252525;
+      background: #111; color: #777; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; font-size: 18px;
+      transition: all 0.2s; flex-shrink: 0; -webkit-appearance: none;
+    }
+    .voice-btn.active { border-color: #fb7185; background: #fb718512; color: #fb7185; animation: vpulse 1s ease-in-out infinite; }
+    @keyframes vpulse { 0%,100%{box-shadow:0 0 0 0 #fb718430} 50%{box-shadow:0 0 0 7px transparent} }
+    .voice-hint { font-size: 10px; color: #fb7185; margin-top: 6px; text-align: center; letter-spacing: 0.04em; }
+    .input-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .cmd-hint { font-size: 9px; color: #282828; letter-spacing: 0.04em; }
+
+    /* ── BUTTONS ────────────────────────────────────────────────────── */
+    .btn-primary {
+      background: #e8ff47; color: #0a0a0a; border: none;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 15px 24px; cursor: pointer; transition: background 0.15s;
+      border-radius: 2px; -webkit-appearance: none; display: block; width: 100%;
+    }
+    .btn-primary:active { background: #f4ff6e; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent; color: #e8ff47; border: 1px solid #e8ff4760;
+      font-family: 'Syne', sans-serif; font-weight: 600; font-size: 11px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 10px 16px; cursor: pointer; transition: background 0.15s;
+      border-radius: 2px; -webkit-appearance: none; white-space: nowrap;
+    }
+    .btn-secondary:active { background: #e8ff4710; }
+    .btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── PLAN ───────────────────────────────────────────────────────── */
+    .motivation-box  { border: 1px solid #e8ff4722; background: #e8ff4706; padding: 14px; border-radius: 2px; margin-bottom: 20px; }
+    .motivation-lbl  { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #e8ff4755; margin-bottom: 6px; }
+    .motivation-text { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; font-style: italic; color: #c0bdb6; line-height: 1.6; }
+    .greeting  { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #e8ff47; margin-bottom: 6px; }
+    .summary   { font-size: 12px; color: #636363; line-height: 1.7; margin-bottom: 18px; }
+    .legend    { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .leg-item  { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #444; display: flex; align-items: center; gap: 4px; }
+    .dot       { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .block-card { border-left: 3px solid; padding: 11px 14px; background: #0f0f0f; margin-bottom: 5px; position: relative; }
+    .block-card.fixed::after { content: '📅'; position: absolute; top: 9px; right: 9px; font-size: 10px; opacity: 0.45; }
+    .block-row  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .block-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+    .block-time { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+    .block-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; color: #f0ede6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .block-dur  { font-size: 10px; color: #333; white-space: nowrap; margin-left: 6px; flex-shrink: 0; }
+    .block-detail { font-size: 11px; color: #606060; line-height: 1.65; }
+    .tip-box  { border: 1px solid #e8ff4720; background: #e8ff4705; padding: 12px 14px; border-radius: 2px; margin: 14px 0; }
+    .tip-lbl  { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #e8ff4755; margin-bottom: 4px; }
+    .tip-text { font-size: 11px; color: #868686; line-height: 1.7; }
+    .followup-row { display: flex; gap: 8px; }
+    .followup-inp {
+      background: #0f0f0f; border: 1px solid #202020; color: #f0ede6;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      outline: none; transition: border-color 0.2s; padding: 10px 12px;
+      border-radius: 2px; flex: 1; -webkit-appearance: none;
+    }
+    .followup-inp:focus { border-color: #e8ff47; }
+    .followup-inp::placeholder { color: #2e2e2e; }
+    .plan-footer { margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .fixed-note { font-size: 10px; color: #242424; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a">
+    <div style="font-family:'Courier New',monospace;font-size:11px;color:#333;letter-spacing:0.1em">LOADING...</div>
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════════════════════════ */
+const CLIENT_ID = '1053441351759-hbf0g84empe6t2dtssim29eot4cdbjse.apps.googleusercontent.com';
+const SCOPES    = 'https://www.googleapis.com/auth/calendar.readonly';
+const EXCLUDE   = ['feiertag', 'holiday', 'geburtstag', 'birthday', 'stuvus'];
+
+const CATS = {
+  training:  { color: '#e8ff47', label: 'Training' },
+  uni:       { color: '#60a5fa', label: 'University' },
+  work:      { color: '#f97316', label: 'Work' },
+  content:   { color: '#c084fc', label: 'Content' },
+  nutrition: { color: '#34d399', label: 'Nutrition' },
+  recovery:  { color: '#fb7185', label: 'Recovery' },
+  personal:  { color: '#94a3b8', label: 'Personal' },
+};
+
+const SYSTEM_PROMPT = `You are Julien's personal AI day planner. You know everything about him:
+
+IDENTITY: Julien, aerospace engineering student (Bachelor), Germany.
+SPORTS & DOMAINS: Calisthenics, road cycling (2 months), windsurfing (15 years, seasonal), social media content creation, Werkstudentenjob (part-time job), university.
+
+CALISTHENICS – Advanced intermediate:
+- Current: 10 pull-ups, 15 dips, tucked press handstand (messy), no free handstand yet
+- Goals: Planche, Muscle-Up, Handstand (free), Front Lever
+- Active 12-month training plan, Phase 1. Parallettes just arrived.
+
+SOCIAL MEDIA:
+- Instagram @jxlien.z (~75k views/30d), TikTok @engineeredathlete
+- Content mix: fitness science, nutrition, calisthenics, student life, scenic/travel
+- USP: engineering student explaining fitness & nutrition scientifically – no bro-science, no hype
+
+PLANNING CATEGORIES: training | uni | work | content | nutrition | recovery | personal
+
+─────────────────────────────────────────────────────────────────────
+OUTPUT: Return ONLY a valid JSON object. No markdown. No code fences. No explanation. Nothing else.
+
+{
+  "greeting": "1 punchy sentence – casual, sharp, no fluff",
+  "motivation": "Short, sharp quote written specifically for Julien – references his actual goals (planche, content, engineering mindset). NOT a generic Instagram quote. Must feel personal.",
+  "summary": "2 sentences – honest overview of the day",
+  "blocks": [
+    {
+      "time": "HH:MM",
+      "duration": "Xmin or Xh",
+      "category": "training|uni|work|content|nutrition|recovery|personal",
+      "title": "Short block title",
+      "detail": "1-2 sentences. For training: specify exact exercises, sets, reps/duration (e.g. 'Tuck planche holds 4×10s, false grip dead hangs 4×30s, wall HS kick-ups 5×30s').",
+      "fixed": true or false
+    }
+  ],
+  "tip": "One sharp, actionable tip specific to today"
+}
+
+RULES:
+- Calendar events = fixed:true. Do NOT move or change their times.
+- Low/tired energy = cut training volume, add more recovery/personal time
+- Max 1 hard training session unless explicitly requested
+- Calisthenics blocks: always name exact progressions and volumes
+- Content blocks: suggest specific content type relevant to the day
+- Fill gaps between fixed blocks intelligently
+- Always end with a wind-down block
+- Default start ~07:00 unless a wake time is given`;
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════════ */
+let phase       = 'init';
+let tokenClient = null;
+let accessToken = store('gca_token')  || '';
+let tokenExpiry = +store('gca_expiry') || 0;
+let anthropicKey= store('ant_key')    || '';
+let calEvents   = [];
+let plan        = null;
+let history     = [];
+let userInput   = '';
+let followUp    = '';
+let followLoading = false;
+let isListening = false;
+let recognition = null;
+let voiceOK     = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+let appError    = '';
+
+/* ═══════════════════════════════════════════════════════════════════
+   STORAGE HELPER
+═══════════════════════════════════════════════════════════════════ */
+function store(key, val) {
+  try {
+    if (val !== undefined) { localStorage.setItem(key, val); return val; }
+    return localStorage.getItem(key);
+  } catch(e) { return null; }
+}
+function storeDel(key) { try { localStorage.removeItem(key); } catch(e) {} }
+
+/* ═══════════════════════════════════════════════════════════════════
+   GOOGLE AUTH
+═══════════════════════════════════════════════════════════════════ */
+function tokenValid() { return accessToken && Date.now() < tokenExpiry - 60000; }
+
+function initTokenClient() {
+  if (!window.google?.accounts?.oauth2) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: onToken,
+    error_callback: onAuthError,
+  });
+}
+
+function connectGoogle() {
+  if (!tokenClient) { appError = 'Google Auth not loaded – please refresh.'; render(); return; }
+  tokenClient.requestAccessToken({ prompt: '' });
+}
+
+function onToken(resp) {
+  if (!resp.access_token) return;
+  accessToken = resp.access_token;
+  tokenExpiry = Date.now() + (resp.expires_in * 1000);
+  store('gca_token', accessToken);
+  store('gca_expiry', tokenExpiry);
+  appError = '';
+  goLoading();
+}
+
+function onAuthError(err) {
+  appError = 'Google auth failed. Make sure your site URL is in Google Cloud Console → OAuth → Authorized JS Origins.';
+  render();
+}
+
+function disconnectGoogle() {
+  accessToken = ''; tokenExpiry = 0;
+  storeDel('gca_token'); storeDel('gca_expiry');
+  setPhase('auth');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CALENDAR
+═══════════════════════════════════════════════════════════════════ */
+async function fetchCalendar() {
+  try {
+    const listRes = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (listRes.status === 401) { disconnectGoogle(); return; }
+    const listData = await listRes.json();
+
+    const cals = (listData.items || []).filter(c => {
+      const n = c.summary.toLowerCase();
+      return !EXCLUDE.some(x => n.includes(x));
+    });
+
+    const today = new Date();
+    const tMin  = new Date(today); tMin.setHours(0,0,0,0);
+    const tMax  = new Date(today); tMax.setHours(23,59,59,999);
+
+    const all = [];
+    await Promise.all(cals.map(async cal => {
+      try {
+        const r = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events`
+          + `?timeMin=${tMin.toISOString()}&timeMax=${tMax.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=20`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const d = await r.json();
+        (d.items || []).forEach(e => all.push({
+          title: e.summary || '(No title)',
+          cal:   cal.summary,
+          start: e.start?.dateTime || e.start?.date,
+          end:   e.end?.dateTime   || e.end?.date,
+          allDay: !e.start?.dateTime,
+        }));
+      } catch(_) {}
+    }));
+
+    all.sort((a, b) => new Date(a.start) - new Date(b.start));
+    calEvents = all;
+    setPhase('input');
+  } catch(e) {
+    appError = 'Could not load calendar. Check your connection.';
+    setPhase('auth');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TIME HELPERS
+═══════════════════════════════════════════════════════════════════ */
+function fmtTime(iso) {
+  if (!iso || iso.length === 10) return null;
+  return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function eventsContext() {
+  if (!calEvents.length) return 'No calendar events today – open day.';
+  return calEvents.map(e => {
+    const s = fmtTime(e.start), en = fmtTime(e.end);
+    return `- ${e.title} [${e.cal}]: ${s ? `${s}–${en}` : 'All day'}`;
+  }).join('\n');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CLAUDE API
+═══════════════════════════════════════════════════════════════════ */
+async function callClaude(messages, system) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1200, system, messages }),
+  });
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message || 'API error');
+  return d.content.map(i => i.text || '').join('');
+}
+
+async function generatePlan() {
+  if (!userInput.trim()) return;
+  setPhase('planning');
+  try {
+    const prompt = `TODAY'S CALENDAR EVENTS (fixed – do not move):\n${eventsContext()}\n\nJULIEN'S INPUT:\n${userInput}`;
+    const text = await callClaude([{ role: 'user', content: prompt }], SYSTEM_PROMPT);
+    plan = JSON.parse(text.replace(/```json|```/g, '').trim());
+    history = [{ role: 'user', content: prompt }, { role: 'assistant', content: text }];
+    setPhase('plan');
+  } catch(e) {
+    appError = `Couldn't generate plan: ${e.message}`;
+    setPhase('input');
+  }
+}
+
+async function doFollowUp() {
+  if (!followUp.trim() || followLoading) return;
+  followLoading = true; appError = ''; render();
+  try {
+    const sys = `You are Julien's AI day planner. A plan exists. Apply requested changes or answer questions. Return ONLY valid JSON in the exact same format.\nCurrent plan: ${JSON.stringify(plan)}`;
+    const newHist = [...history, { role: 'user', content: followUp }];
+    const text = await callClaude(newHist, sys);
+    plan = JSON.parse(text.replace(/```json|```/g, '').trim());
+    history = [...newHist, { role: 'assistant', content: text }];
+    followUp = '';
+  } catch(e) {
+    appError = 'Update failed. Try again.';
+  }
+  followLoading = false; render();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VOICE
+═══════════════════════════════════════════════════════════════════ */
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  const r = new SR();
+  r.lang = 'en-US'; r.continuous = true; r.interimResults = true;
+  let final = userInput ? userInput.trimEnd() + ' ' : '';
+  r.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      else interim = e.results[i][0].transcript;
+    }
+    userInput = final + interim;
+    const ta = document.getElementById('ta');
+    if (ta) ta.value = userInput;
+  };
+  r.onend  = () => { isListening = false; render(); };
+  r.onerror= () => { isListening = false; render(); };
+  r.start();
+  recognition = r; isListening = true; render();
+}
+
+function stopVoice() {
+  recognition?.stop();
+  isListening = false; render();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PHASE CONTROL
+═══════════════════════════════════════════════════════════════════ */
+function setPhase(p) { phase = p; render(); }
+function goLoading()  { setPhase('loading'); fetchCalendar(); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════════════════ */
+function render() {
+  const header = `<div class="header"><span class="header-title">ENGINEERED</span><span class="header-sub">Daily Planner</span></div>`;
+  let body = '';
+
+  switch(phase) {
+    case 'init':
+    case 'loading':  body = tplLoading('LOADING CALENDAR...'); break;
+    case 'planning': body = tplLoading('BUILDING YOUR DAY...'); break;
+    case 'setup':    body = tplSetup(); break;
+    case 'auth':     body = tplAuth(); break;
+    case 'input':    body = tplInput(); break;
+    case 'plan':     body = tplPlan(); break;
+  }
+
+  document.getElementById('app').innerHTML =
+    `${header}<div class="body">${body}</div>`;
+  bind();
+}
+
+/* ─────── TEMPLATES ─────── */
+function tplLoading(msg) {
+  return `<div class="loading-screen"><div class="loading-msg">${msg}</div><div class="loading-bar"><div class="loading-fill"></div></div></div>`;
+}
+
+function tplSetup() {
+  const preview = anthropicKey ? `sk-ant-...${anthropicKey.slice(-6)}` : '';
+  return `<div class="fade-in">
+    <div class="label">→ One-time setup</div>
+    <p class="help-text">Enter your Anthropic API key to power the AI planner. Stored locally on your device only – never uploaded anywhere.</p>
+    <input id="api-inp" type="password" class="text-input" placeholder="sk-ant-api03-..." value="${esc(anthropicKey)}">
+    ${preview ? `<div class="key-preview">Saved key: ${preview}</div>` : ''}
+    ${appError ? `<div class="error-msg">${esc(appError)}</div>` : ''}
+    <div style="margin-top:12px;margin-bottom:20px">
+      <a href="https://console.anthropic.com/settings/keys" target="_blank" class="link">→ Get API key from Anthropic Console</a>
+    </div>
+    <button id="save-key" class="btn-primary">Save & Continue →</button>
+    ${anthropicKey ? `<div style="text-align:center;margin-top:14px"><button id="skip-setup" class="reset-btn">Use saved key</button></div>` : ''}
+  </div>`;
+}
+
+function tplAuth() {
+  const origin = window.location.origin;
+  return `<div class="fade-in auth-center">
+    <span class="auth-icon">📅</span>
+    <div class="label" style="justify-content:center;display:flex">Connect Google Calendar</div>
+    <p class="help-text" style="text-align:center;max-width:320px;margin:0 auto 24px">So kann ich deine Vorlesungen und Termine automatisch in den Tagesplan einbauen.</p>
+    ${appError ? `<div class="error-msg" style="text-align:left;margin-bottom:16px">${esc(appError)}</div>` : ''}
+    <button id="connect-google" class="btn-primary">Connect Google Calendar →</button>
+    <div class="origin-box" style="text-align:left;margin-top:20px">
+      <div class="origin-label">⚠ Add this URL to Google Cloud Console → OAuth → Authorized JS Origins:</div>
+      <div class="origin-url">${esc(origin)}</div>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <button id="back-setup" class="reset-btn">← Change API key</button>
+    </div>
+  </div>`;
+}
+
+function tplInput() {
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  const evHTML = calEvents.length
+    ? calEvents.map(e => {
+        const s = fmtTime(e.start), en = fmtTime(e.end);
+        return `<div class="cal-event"><div class="cal-title">${esc(e.title)}</div><div class="cal-meta">${esc(e.cal)}${s ? ` · ${s}–${en}` : ' · All day'}</div></div>`;
+      }).join('')
+    : `<div class="no-events">No events found – open day ✓</div>`;
+
+  return `<div class="fade-in">
+    <div class="date-bar">${today}</div>
+    <div class="label">→ Today from your calendar</div>
+    <div class="cal-strip">${evHTML}</div>
+    <div class="label" style="margin-top:20px">→ Energy &amp; goals today</div>
+    <div class="input-wrap">
+      <textarea id="ta" rows="4" placeholder="e.g. Medium energy. Want to do calisthenics and maybe film something.">${esc(userInput)}</textarea>
+      ${voiceOK ? `<button id="voice-btn" class="voice-btn${isListening ? ' active' : ''}">${isListening ? '⏹' : '🎙'}</button>` : ''}
+    </div>
+    ${isListening ? `<div class="voice-hint">● Recording – tap to stop</div>` : ''}
+    ${appError ? `<div class="error-msg">${esc(appError)}</div>` : ''}
+    <button id="gen-btn" class="btn-primary" style="margin-top:12px">Plan My Day →</button>
+    <div class="input-footer">
+      <span class="cmd-hint">⌘ + Enter to generate</span>
+      <div style="display:flex;gap:16px">
+        <button id="refresh-cal" class="reset-btn">↺ Refresh</button>
+        <button id="disconnect" class="reset-btn">Disconnect</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function tplPlan() {
+  if (!plan) return '';
+  const legend = Object.entries(CATS).map(([k, v]) =>
+    `<span class="leg-item"><span class="dot" style="background:${v.color}"></span>${v.label}</span>`).join('');
+
+  const blocks = (plan.blocks || []).map(b => {
+    const c = CATS[b.category] || CATS.personal;
+    return `<div class="block-card${b.fixed ? ' fixed' : ''}" style="border-left-color:${c.color}">
+      <div class="block-row">
+        <div class="block-left">
+          <span class="block-time" style="color:${c.color}">${esc(b.time)}</span>
+          <span class="block-name">${esc(b.title)}</span>
+        </div>
+        <span class="block-dur">${esc(b.duration)}</span>
+      </div>
+      <div class="block-detail">${esc(b.detail)}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="fade-in">
+    ${plan.motivation ? `<div class="motivation-box">
+      <div class="motivation-lbl">→ Today's Motivation</div>
+      <div class="motivation-text">"${esc(plan.motivation)}"</div>
+    </div>` : ''}
+    <div class="greeting">${esc(plan.greeting)}</div>
+    <div class="summary">${esc(plan.summary)}</div>
+    <div class="legend">${legend}</div>
+    <div class="label">→ Time Blocks</div>
+    ${blocks}
+    ${plan.tip ? `<div class="tip-box">
+      <div class="tip-lbl">→ Today's Focus</div>
+      <div class="tip-text">${esc(plan.tip)}</div>
+    </div>` : ''}
+    <div class="divider"></div>
+    <div class="label">→ Adjust or ask</div>
+    <div class="followup-row">
+      <input id="fu-inp" class="followup-inp" placeholder="Move training to morning / pre-workout nutrition?" value="${esc(followUp)}">
+      <button id="fu-btn" class="btn-secondary" ${followLoading ? 'disabled' : ''}>${followLoading ? '...' : 'Update'}</button>
+    </div>
+    ${appError ? `<div class="error-msg" style="margin-top:8px">${esc(appError)}</div>` : ''}
+    <div class="plan-footer">
+      <button id="replan-btn" class="reset-btn">↩ Plan new day</button>
+      <span class="fixed-note">📅 = calendar event</span>
+    </div>
+  </div>`;
+}
+
+/* ─────── ESCAPE ─────── */
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EVENT BINDING
+═══════════════════════════════════════════════════════════════════ */
+function bind() {
+  // Setup
+  q('save-key', el => el.onclick = () => {
+    const k = document.getElementById('api-inp')?.value?.trim();
+    if (!k || !k.startsWith('sk-ant-')) { appError = 'Invalid key – should start with sk-ant-'; render(); return; }
+    anthropicKey = k; store('ant_key', k); appError = '';
+    tokenValid() ? goLoading() : setPhase('auth');
+  });
+  q('skip-setup', el => el.onclick = () => {
+    appError = '';
+    tokenValid() ? goLoading() : setPhase('auth');
+  });
+
+  // Auth
+  q('connect-google', el => el.onclick = connectGoogle);
+  q('back-setup',     el => el.onclick = () => { appError = ''; setPhase('setup'); });
+
+  // Input
+  q('ta', el => {
+    el.oninput = e => { userInput = e.target.value; };
+    el.onkeydown = e => { if (e.metaKey && e.key === 'Enter') generatePlan(); };
+  });
+  q('voice-btn',   el => el.onclick = () => isListening ? stopVoice() : startVoice());
+  q('gen-btn',     el => el.onclick = generatePlan);
+  q('refresh-cal', el => el.onclick = () => { appError = ''; setPhase('loading'); fetchCalendar(); });
+  q('disconnect',  el => el.onclick = disconnectGoogle);
+
+  // Plan
+  q('fu-inp', el => {
+    el.oninput = e => { followUp = e.target.value; };
+    el.onkeydown = e => { if (e.key === 'Enter') doFollowUp(); };
+  });
+  q('fu-btn',     el => el.onclick = doFollowUp);
+  q('replan-btn', el => el.onclick = () => { plan = null; history = []; userInput = ''; appError = ''; setPhase('input'); });
+}
+
+function q(id, fn) { const el = document.getElementById(id); if (el) fn(el); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  let tries = 0;
+  const wait = setInterval(() => {
+    tries++;
+    if (window.google?.accounts?.oauth2 || tries > 40) {
+      clearInterval(wait);
+      if (window.google?.accounts?.oauth2) initTokenClient();
+
+      if (!anthropicKey)   setPhase('setup');
+      else if (!tokenValid()) setPhase('auth');
+      else { setPhase('loading'); fetchCalendar(); }
+    }
+  }, 75);
+});
+</script>
+</body>
+</html>
